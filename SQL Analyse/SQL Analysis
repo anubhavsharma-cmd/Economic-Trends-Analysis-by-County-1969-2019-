@@ -1,0 +1,150 @@
+-- ============================================================
+-- 📊 U.S. County Economic Data Analysis (2010–2019)
+-- 🗂 Dataset: profile_by_county_1969_2019.csv
+-- 👨‍💻 Author: Anubhav Sharma
+-- ============================================================
+
+-- ============================================================
+-- 🔧 STEP 1: Create a temporary table
+-- Description: This table stores normalized economic data by county, year, and description.
+-- It supports clean querying and analysis for trends and comparisons.
+-- ============================================================
+CREATE TEMP TABLE EconomicData (
+    GeoName TEXT,
+    Year INTEGER,
+    Description TEXT,
+    Value FLOAT
+);
+
+-- ============================================================
+-- 📥 STEP 2: Insert sample data
+-- Description: Example insert statements for the years 2010 and 2019,
+-- showing 'Personal income (thousands of dollars)' for a few counties.
+-- Replace or expand this with the full insert export from your CSV.
+-- ============================================================
+INSERT INTO EconomicData (GeoName, Year, Description, Value) VALUES
+('Los Angeles County, CA', 2010, 'Personal income (thousands of dollars)', 1200000.00),
+('Los Angeles County, CA', 2019, 'Personal income (thousands of dollars)', 1750000.00),
+('Cook County, IL', 2010, 'Personal income (thousands of dollars)', 900000.00),
+('Cook County, IL', 2019, 'Personal income (thousands of dollars)', 1350000.00),
+('Harris County, TX', 2010, 'Personal income (thousands of dollars)', 850000.00),
+('Harris County, TX', 2019, 'Personal income (thousands of dollars)', 1300000.00);
+
+-- ============================================================
+-- 🏆 STEP 3: Top 5 counties with highest economic growth (2010–2019)
+-- Description: Calculates the difference in personal income between 2010 and 2019.
+-- Insight: Identifies counties with the most significant increase in total income.
+-- ============================================================
+SELECT 
+    GeoName,
+    SUM(CASE WHEN Year = 2019 THEN Value ELSE 0 END) -
+    SUM(CASE WHEN Year = 2010 THEN Value ELSE 0 END) AS Growth
+FROM EconomicData
+WHERE Description = 'Personal income (thousands of dollars)'
+GROUP BY GeoName
+ORDER BY Growth DESC
+LIMIT 5;
+
+-- ============================================================
+-- 📊 STEP 4: Compare GDP trends of two counties
+-- Description: Displays GDP over time for two selected counties.
+-- Insight: Helps visualize growth trajectories and economic stability.
+-- ============================================================
+SELECT 
+    GeoName,
+    Year,
+    Value AS GDP
+FROM EconomicData
+WHERE GeoName IN ('Los Angeles County, CA', 'Cook County, IL')
+  AND Description = 'Gross domestic product (GDP)'
+ORDER BY Year;
+
+-- ============================================================
+-- 🏭 STEP 5: Industry with highest growth (2009–2019)
+-- Description: Identifies the industry (description) with the largest increase in value.
+-- Insight: Useful for understanding which sector dominated the economy during the decade.
+-- ============================================================
+SELECT 
+    Description AS IndustryClassification,
+    SUM(CASE WHEN Year = 2019 THEN Value ELSE 0 END) -
+    SUM(CASE WHEN Year = 2009 THEN Value ELSE 0 END) AS Growth
+FROM EconomicData
+GROUP BY IndustryClassification
+ORDER BY Growth DESC
+LIMIT 1;
+
+-- ============================================================
+-- 📈 STEP 6: Total U.S. personal income growth (1969–2019)
+-- Description: Aggregates income across all counties per year.
+-- Insight: Reveals national-level personal income trends over 50 years.
+-- ============================================================
+SELECT 
+    Year,
+    SUM(Value) AS Total_Personal_Income
+FROM EconomicData
+WHERE Description = 'Personal income (thousands of dollars)'
+GROUP BY Year
+ORDER BY Year;
+
+-- ============================================================
+-- 💵 STEP 7: Top 5 states by per capita income (2019)
+-- Description: Calculates average per capita income per state.
+-- Insight: Helps identify wealthier regions at a per-resident level.
+-- ============================================================
+SELECT 
+    SUBSTRING(GeoName, LENGTH(GeoName) - POSITION(',' IN REVERSE(GeoName)) + 2) AS State,
+    AVG(Value) AS Avg_Per_Capita_Income
+FROM EconomicData
+WHERE Description = 'Per capita personal income (dollars)' AND Year = 2019
+GROUP BY State
+ORDER BY Avg_Per_Capita_Income DESC
+LIMIT 5;
+
+-- ============================================================
+-- 🔻 STEP 8: Counties with declining personal income (2010–2019)
+-- Description: Finds counties where total personal income dropped during the decade.
+-- Insight: Useful for spotting economically declining areas.
+-- ============================================================
+WITH IncomeDiff AS (
+    SELECT 
+        GeoName,
+        MAX(CASE WHEN Year = 2010 THEN Value END) AS Income_2010,
+        MAX(CASE WHEN Year = 2019 THEN Value END) AS Income_2019
+    FROM EconomicData
+    WHERE Description = 'Personal income (thousands of dollars)'
+    GROUP BY GeoName
+)
+SELECT 
+    GeoName,
+    Income_2010,
+    Income_2019,
+    (Income_2019 - Income_2010) AS Change
+FROM IncomeDiff
+WHERE Income_2019 < Income_2010
+ORDER BY Change ASC;
+
+-- ============================================================
+-- 🔁 STEP 9: Year-over-year growth of per capita income
+-- Description: Calculates % growth between each year.
+-- Insight: Measures acceleration or slowdown in economic prosperity.
+-- ============================================================
+WITH YearlyIncome AS (
+    SELECT 
+        Year,
+        SUM(Value) AS TotalPerCapitaIncome
+    FROM EconomicData
+    WHERE Description = 'Per capita personal income (dollars)'
+    GROUP BY Year
+)
+SELECT 
+    a.Year,
+    a.TotalPerCapitaIncome,
+    ROUND(((a.TotalPerCapitaIncome - b.TotalPerCapitaIncome) / b.TotalPerCapitaIncome) * 100, 2) AS YoY_Growth_Percent
+FROM YearlyIncome a
+JOIN YearlyIncome b ON a.Year = b.Year + 1
+ORDER BY a.Year;
+
+-- ============================================================
+-- ✅ END OF ANALYSIS SCRIPT
+-- Add this .sql file to your GitHub portfolio with the dataset.
+-- ============================================================
