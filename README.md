@@ -42,7 +42,79 @@ o	Time-series data from 1969 to 2019
 
 4. Data Storage & Analysis (SQL)
 
-5. Data Visualization (Power BI)
+SQL Analysis – Objective & Methodology
+ Objective
+To analyze U.S. county-level economic data from 1969 to 2019 using SQL to:
+
+Identify top-performing counties and industries
+
+Compare income and GDP trends
+
+Measure growth and decline over time
+
+Provide actionable insights for policy-making, investment, and regional development
+
+ Methodology
+
+1. Data Import
+
+The dataset (profile_by_county_1969_2019.csv) was imported into a relational SQL table called profile_by_county.
+
+Each row represents a unique economic indicator for a county across multiple years (wide format).
+
+2. Table Design
+
+A wide table format was used for storage, with columns for each year from 1969 to 2019.
+
+For analysis, the data was normalized into a long format using SQL or data transformation tools like Power BI or Python.
+
+3. Normalization (Unpivoting)
+
+Created a new table (EconomicData) with the structure:
+
+GeoName | Year | Description | Value
+
+This long format allows for easier filtering, aggregation, and comparison across time.
+
+4. SQL Queries and Analysis
+
+Multiple SQL queries were written to derive insights:
+
+Top 5 Counties by Economic Growth (2010–2019)
+
+Based on personal income growth.
+
+GDP Trend Comparison for Two Counties
+
+Time series analysis for selected counties.
+
+Top Growing Industry (2009–2019)
+
+Compared value change across industries.
+
+Per Capita Income Trends & YoY Growth
+
+Tracked income progression and calculated annual change.
+
+States with Highest Per Capita Income (2019)
+
+Aggregated and ranked performance by state.
+
+Counties with Declining Income (2010–2019)
+
+Detected negative growth for focused improvement.
+
+5. Validation
+
+All queries were tested using sample data before applying to the full dataset.
+
+Aggregates and rankings were verified for correctness.
+
+ Conclusion
+This SQL-based analysis provides a powerful, scalable, and flexible way to derive key insights from longitudinal economic data. It can be extended with BI tools like Power BI or Tableau for visualization and storytelling.
+
+
+6. Data Visualization (Power BI)
 
 Key Dashboards Created:
 
